@@ -175,19 +175,20 @@ void _glfwInputWindowMonitor(_GLFWwindow* window, _GLFWmonitor* monitor)
     window->monitor = monitor;
 }
 
-//////////////////////////////////////////////////////////////////////////
-//////                        GLFW public API                       //////
-//////////////////////////////////////////////////////////////////////////
-
-GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height,
-                                     const char* title,
-                                     GLFWmonitor* monitor,
-                                     GLFWwindow* share)
+GLFWwindow* _glfwCreateWindowGeneric(int width, int height,
+                                            const char* title,
+                                            GLFWmonitor* monitor,
+                                            GLFWwindow* share,
+                                            GLFWbool attachToDesktop)
 {
     _GLFWfbconfig fbconfig;
     _GLFWctxconfig ctxconfig;
     _GLFWwndconfig wndconfig;
     _GLFWwindow* window;
+
+    if (attachToDesktop == GLFW_TRUE) {
+        printf("requests desktop window\n");
+    }
 
     assert(title != NULL);
     assert(width >= 0);
@@ -235,6 +236,7 @@ GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height,
     window->focusOnShow      = wndconfig.focusOnShow;
     window->mousePassthrough = wndconfig.mousePassthrough;
     window->cursorMode       = GLFW_CURSOR_NORMAL;
+    window->isDesktop        = attachToDesktop;
 
     window->doublebuffer = fbconfig.doublebuffer;
 
@@ -252,6 +254,26 @@ GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height,
     }
 
     return (GLFWwindow*) window;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////                        GLFW public API                       //////
+//////////////////////////////////////////////////////////////////////////
+
+GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height,
+                                     const char* title,
+                                     GLFWmonitor* monitor,
+                                     GLFWwindow* share)
+{
+    return _glfwCreateWindowGeneric(width, height, title, monitor, share, GLFW_FALSE);
+}
+
+GLFWAPI GLFWwindow* glfwCreateDesktopWindow(int width, int height,
+                                     const char* title,
+                                     GLFWmonitor* monitor,
+                                     GLFWwindow* share)
+{
+    return _glfwCreateWindowGeneric(width, height, title, monitor, share, GLFW_TRUE);
 }
 
 void glfwDefaultWindowHints(void)

@@ -529,6 +529,7 @@ struct _GLFWwindow
     GLFWbool            focusOnShow;
     GLFWbool            mousePassthrough;
     GLFWbool            shouldClose;
+    GLFWbool            isDesktop;
     void*               userPointer;
     GLFWbool            doublebuffer;
     GLFWvidmode         videoMode;

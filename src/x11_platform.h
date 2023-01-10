@@ -144,6 +144,7 @@ typedef Status (* PFN_XIconifyWindow)(Display*,Window,int);
 typedef Status (* PFN_XInitThreads)(void);
 typedef Atom (* PFN_XInternAtom)(Display*,const char*,Bool);
 typedef int (* PFN_XLookupString)(XKeyEvent*,char*,int,KeySym*,XComposeStatus*);
+typedef int (* PFN_XLowerWindow)(Display*,Window);
 typedef int (* PFN_XMapRaised)(Display*,Window);
 typedef int (* PFN_XMapWindow)(Display*,Window);
 typedef int (* PFN_XMoveResizeWindow)(Display*,Window,int,int,unsigned int,unsigned int);
@@ -155,6 +156,7 @@ typedef int (* PFN_XPeekEvent)(Display*,XEvent*);
 typedef int (* PFN_XPending)(Display*);
 typedef Bool (* PFN_XQueryExtension)(Display*,const char*,int*,int*,int*);
 typedef Bool (* PFN_XQueryPointer)(Display*,Window,Window*,Window*,int*,int*,int*,int*,unsigned int*);
+typedef Bool (* PFN_XQueryTree)(Display*,Window,Window*,Window*,Window**,unsigned int*);
 typedef int (* PFN_XRaiseWindow)(Display*,Window);
 typedef Bool (* PFN_XRegisterIMInstantiateCallback)(Display*,void*,char*,char*,XIDProc,XPointer);
 typedef int (* PFN_XResizeWindow)(Display*,Window,unsigned int,unsigned int);
@@ -245,6 +247,7 @@ typedef void (* PFN_Xutf8SetWMProperties)(Display*,Window,const char*,const char
 #define XIconifyWindow _glfw.x11.xlib.IconifyWindow
 #define XInternAtom _glfw.x11.xlib.InternAtom
 #define XLookupString _glfw.x11.xlib.LookupString
+#define XLowerWindow _glfw.x11.xlib.LowerWindow
 #define XMapRaised _glfw.x11.xlib.MapRaised
 #define XMapWindow _glfw.x11.xlib.MapWindow
 #define XMoveResizeWindow _glfw.x11.xlib.MoveResizeWindow
@@ -255,6 +258,7 @@ typedef void (* PFN_Xutf8SetWMProperties)(Display*,Window,const char*,const char
 #define XPending _glfw.x11.xlib.Pending
 #define XQueryExtension _glfw.x11.xlib.QueryExtension
 #define XQueryPointer _glfw.x11.xlib.QueryPointer
+#define XQueryTree _glfw.x11.xlib.QueryTree
 #define XRaiseWindow _glfw.x11.xlib.RaiseWindow
 #define XRegisterIMInstantiateCallback _glfw.x11.xlib.RegisterIMInstantiateCallback
 #define XResizeWindow _glfw.x11.xlib.ResizeWindow
@@ -691,6 +695,7 @@ typedef struct _GLFWlibraryX11
         PFN_XIconifyWindow IconifyWindow;
         PFN_XInternAtom InternAtom;
         PFN_XLookupString LookupString;
+        PFN_XLowerWindow LowerWindow;
         PFN_XMapRaised MapRaised;
         PFN_XMapWindow MapWindow;
         PFN_XMoveResizeWindow MoveResizeWindow;
@@ -701,6 +706,7 @@ typedef struct _GLFWlibraryX11
         PFN_XPending Pending;
         PFN_XQueryExtension QueryExtension;
         PFN_XQueryPointer QueryPointer;
+        PFN_XQueryTree QueryTree;
         PFN_XRaiseWindow RaiseWindow;
         PFN_XRegisterIMInstantiateCallback RegisterIMInstantiateCallback;
         PFN_XResizeWindow ResizeWindow;

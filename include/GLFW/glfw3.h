@@ -3160,6 +3160,18 @@ GLFWAPI void glfwWindowHintString(int hint, const char* value);
  */
 GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share);
 
+/*!
+ * @brief Like `glfwCreateWindow`, except the window is attached to the desktop.
+ * That is, the override_redirect flag is set, event handling is disabled, and the
+ * window is lowered to the bottom of the stacking order. This mimics the behaviour
+ * of xwinwrap.
+ * 
+ * @since Added in this custom fork of glfw. 
+ * 
+ * @ingroup window
+ */
+GLFWAPI GLFWwindow* glfwCreateDesktopWindow(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share);
+
 /*! @brief Destroys the specified window and its context.
  *
  *  This function destroys the specified window and its context.  On calling

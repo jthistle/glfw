@@ -1413,6 +1413,8 @@ int _glfwInitX11(void)
         _glfwPlatformGetModuleSymbol(_glfw.x11.xlib.handle, "XInternAtom");
     _glfw.x11.xlib.LookupString = (PFN_XLookupString)
         _glfwPlatformGetModuleSymbol(_glfw.x11.xlib.handle, "XLookupString");
+    _glfw.x11.xlib.LowerWindow = (PFN_XLowerWindow)
+        _glfwPlatformGetModuleSymbol(_glfw.x11.xlib.handle, "XLowerWindow");
     _glfw.x11.xlib.MapRaised = (PFN_XMapRaised)
         _glfwPlatformGetModuleSymbol(_glfw.x11.xlib.handle, "XMapRaised");
     _glfw.x11.xlib.MapWindow = (PFN_XMapWindow)
@@ -1433,6 +1435,8 @@ int _glfwInitX11(void)
         _glfwPlatformGetModuleSymbol(_glfw.x11.xlib.handle, "XQueryExtension");
     _glfw.x11.xlib.QueryPointer = (PFN_XQueryPointer)
         _glfwPlatformGetModuleSymbol(_glfw.x11.xlib.handle, "XQueryPointer");
+    _glfw.x11.xlib.QueryTree = (PFN_XQueryTree)
+        _glfwPlatformGetModuleSymbol(_glfw.x11.xlib.handle, "XQueryTree");
     _glfw.x11.xlib.RaiseWindow = (PFN_XRaiseWindow)
         _glfwPlatformGetModuleSymbol(_glfw.x11.xlib.handle, "XRaiseWindow");
     _glfw.x11.xlib.RegisterIMInstantiateCallback = (PFN_XRegisterIMInstantiateCallback)

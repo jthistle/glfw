@@ -562,6 +562,109 @@ static void inputContextDestroyCallback(XIC ic, XPointer clientData, XPointer ca
     window->x11.ic = NULL;
 }
 
+// Find a subwindow of given win with width w and height h 
+// 
+static Window find_subwindow(Window win, int w, int h)
+{
+    unsigned int i, j;
+    Window troot, parent, *children;
+    unsigned int n;
+
+    /* search subwindows with same size as display or work area */
+
+    for (i = 0; i < 10; i++) {
+        XQueryTree(_glfw.x11.display, win, &troot, &parent, &children, &n);
+
+        for (j = 0; j < n; j++) {
+            XWindowAttributes attrs;
+
+            if (XGetWindowAttributes(_glfw.x11.display, children[j], &attrs)) {
+                /* Window must be mapped and same size as display or
+                 * work space */
+                if (attrs.map_state != 0 && ((attrs.width == 1920
+                                              && attrs.height == 1080)
+                                             || (attrs.width == w && attrs.height == h))) {
+                    win = children[j];
+                    break;
+                }
+            }
+        }
+
+        XFree(children);
+        if (j == n) {
+            break;
+        }
+    }
+
+    return win;
+}
+
+// Try to find the desktop window
+//
+static Window findDesktopWindow()
+{
+    Atom type;
+    int format, i;
+    unsigned long nitems, bytes;
+    unsigned int n;
+    // should initally be the same as _glfw.x11.root
+    Window root = RootWindow(_glfw.x11.display, _glfw.x11.screen);
+    Window troot, parent, *children;
+    Window win = root;
+    unsigned char *buf = NULL;
+
+    /* some window managers set __SWM_VROOT to some child of root window */
+
+    XQueryTree(_glfw.x11.display, root, &troot, &parent, &children, &n);
+    for (i = 0; i < (int) n; i++) {
+        if (XGetWindowProperty(_glfw.x11.display, children[i],  XInternAtom(_glfw.x11.display, "__SWM_VROOT", False), 0, 1,
+                               False, XA_WINDOW, &type, &format, &nitems, &bytes, &buf)
+                == Success && type == XA_WINDOW) {
+            win = *(Window *) buf;
+            XFree(buf);
+            XFree(children);
+            fprintf(stderr,
+                    "desktop window (%lx) found from __SWM_VROOT property\n",
+                    win);
+            fflush(stderr);
+            return win;
+        }
+
+        if (buf) {
+            XFree(buf);
+            buf = 0;
+        }
+    }
+    XFree(children);
+
+    /* get subwindows from root */
+    win = find_subwindow(root, -1, -1);
+
+    // display_width = DisplayWidth(display, screen);
+    // display_height = DisplayHeight(display, screen);
+    int display_width = 1920;
+    int display_height = 1080;
+
+    win = find_subwindow(win, display_width, display_height);
+
+    if (buf) {
+        XFree(buf);
+        buf = 0;
+    }
+
+    if (win != root) {
+        fprintf(stderr,
+                "desktop window (%lx) is subwindow of root window (%lx)\n",
+                win, root);
+    } else {
+        fprintf(stderr, "desktop window (%lx) is root window\n", win);
+    }
+
+    fflush(stderr);
+
+    return win;
+}
+
 // Create the X11 window (and its colormap)
 //
 static GLFWbool createNativeWindow(_GLFWwindow* window,
@@ -593,12 +696,35 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
 
     window->x11.transparent = _glfwIsVisualTransparentX11(visual);
 
+    Window root = _glfw.x11.root;
+
     XSetWindowAttributes wa = { 0 };
     wa.colormap = window->x11.colormap;
     wa.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask |
                     PointerMotionMask | ButtonPressMask | ButtonReleaseMask |
                     ExposureMask | FocusChangeMask | VisibilityChangeMask |
                     EnterWindowMask | LeaveWindowMask | PropertyChangeMask;
+    
+    long int flags = CWBorderPixel | CWColormap | CWEventMask;
+
+    if (window->isDesktop == GLFW_TRUE) {
+        XSetWindowAttributes atrs = { 
+            ParentRelative, 0L, 0, 0L, 0, 0,
+            Always, 0L, 0L, False, StructureNotifyMask | ExposureMask, 0L,
+            True, window->x11.colormap, 0
+        };
+        // atrs.event_mask = wa.event_mask;
+        wa = atrs;
+
+        flags = CWOverrideRedirect | CWBackingStore | CWBorderPixel | CWColormap;
+
+        root = findDesktopWindow();
+
+        window->x11.overrideRedirect = GLFW_TRUE;
+    }
+
+    // this is probably absolutely horrible but let's do it anyway
+    _glfw.x11.root = root;
 
     _glfwGrabErrorHandlerX11();
 
@@ -611,7 +737,7 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
                                        depth,  // Color depth
                                        InputOutput,
                                        visual,
-                                       CWBorderPixel | CWColormap | CWEventMask,
+                                       flags,
                                        &wa);
 
     _glfwReleaseErrorHandlerX11();
@@ -785,8 +911,13 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
     _glfwGetWindowPosX11(window, &window->x11.xpos, &window->x11.ypos);
     _glfwGetWindowSizeX11(window, &window->x11.width, &window->x11.height);
 
+    if (window->isDesktop) {
+        XLowerWindow(_glfw.x11.display, window->x11.handle);
+    }
+
     return GLFW_TRUE;
 }
+
 
 // Set the specified property to the selection converted to the requested target
 //
